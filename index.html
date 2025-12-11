@@ -88,7 +88,25 @@
     const LAT_PERMITIDA = -23.136030;
     const LON_PERMITIDA = -47.168871;
     const RAIO_METROS = 200; // +/- inutil por agora
+    const TEMPO_MAX = 15;
 
+    //ve se nao fez coisa errada
+    let  UltimaV = Date.now()
+
+    document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      const agora = Date.now();
+      const tempoFora = (agora - ultimaVisibilidade) / 1000;
+
+      if (tempoFora > TEMPO_MAX) {
+        location.reload(); 
+      }
+    } else {
+      ultimaVisibilidade = Date.now();
+    }
+  });
+
+    // ve se nao esta muito longe do ponto selecionado
     function calcularDistancia(lat1, lon1, lat2, lon2) {
       const R = 6371000;
       const toRad = x => x * Math.PI / 180;
@@ -97,7 +115,7 @@
       const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
-
+    // fala se ta fazendo coisa errada
     function mostrarPopup(msg) {
       const popup = document.getElementById("popup");
       popup.textContent = msg;
@@ -110,7 +128,7 @@
       msg.style.color = cor;
       msg.textContent = texto;
     }
-
+    // confirmação pra nao bater no errado
     function confirmarPonto() {
       const TP = document.getElementById("tipoPonto").value;
       let txt = `Você vai bater o ponto ${TP}`;
@@ -119,7 +137,7 @@
       else
       alert("Selecione o Ponto correto.")
     }
-
+    // bate o ponto
     function baterPonto() {
       const nome = document.getElementById("nome").value;
       const tipo = document.getElementById("tipoPonto").value;
@@ -142,10 +160,10 @@
           return;
         }
 
-        // mesma mensagem
+        
         atualizarMsg("🕓 Enviando ponto...");
 
-        // dispara o envio sem esperar a resposta
+        // dispara o post para o back
         setTimeout(() => {
           fetch(SCRIPT_URL, {
             method: "POST",
@@ -154,7 +172,7 @@
           });
         }, 20);
 
-        // mesma mensagem final que o servidor usava
+        // Confirma o ponto para o usuário
         setTimeout(() => {
           atualizarMsg(`✅ ${tipo} registrada.`, "green");
         }, 120);

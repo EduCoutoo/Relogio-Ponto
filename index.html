@@ -84,16 +84,14 @@
   <div id="msg"></div>
   <div class="popup" id="popup">❌ Fora da área permitida!</div>
   <script>
-// 🔒 IMPEDIR QUALQUER USO SE NÃO FOR ACESSO DIRETO (ex: QR Code fresco)
+// IMPEDIR QUALQUER USO SE NÃO FOR ACESSO DIRETO 
 (function() {
-  // Detecta tipo de carregamento
   const navEntry = performance.getEntriesByType("navigation")[0];
   const navType = navEntry ? navEntry.type : 
                   performance.navigation ? 
                     (performance.navigation.type === 1 ? "reload" : "navigate") : 
                     "unknown";
 
-  // Só permite se for ACESSO DIRETO (não recarregamento, não histórico)
   if (navType !== "navigate") {
     document.body.innerHTML = `
       <div style="font-family: sans-serif; text-align: center; padding: 40px; background: #fef9f9;">
@@ -123,11 +121,10 @@
     const FRESHNESS_MS = 6000;  
     const LEITURAS_GPS = 2;
     const TEMPO_MAX = 15;
-
-    //ve se nao fez coisa errada
+ 
     let  UltimaV = Date.now();
 
-    // ve se nao esta muito longe do ponto selecionado
+    // CHECKA LOCALIZAÇAO
     function calcularDistancia(lat1, lon1, lat2, lon2) {
       const R = 6371000;
       const toRad = x => x * Math.PI / 180;
@@ -136,7 +133,7 @@
       const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
-    // fala se ta fazendo coisa errada
+    // FALA SE TA FAZENDO COISA ERRADA
     function mostrarPopup(msg) {
       const popup = document.getElementById("popup");
       popup.textContent = msg;
@@ -149,7 +146,7 @@
       msg.style.color = cor;
       msg.textContent = texto;
     }
-    // confirmação pra nao bater no errado
+    
     function confirmarPonto() {
       const TP = document.getElementById("tipoPonto").value;
       let txt = `Você vai bater o ponto ${TP}`;
@@ -158,16 +155,15 @@
       else
       alert("Selecione o Ponto correto.")
     }
-    // ✅ Gera token ÚNICO por carregamento da página (não por sessão!)
   const TOKEN = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    // bate o ponto
+    // BATE O PONTO
     function gerarToken() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')
     .substring(0, 16);
 }
-    // ── Pré-aquecimento: inicia GPS assim que a página carrega ──────────────
+    // DEIXA GPS PREPARADO PRA PONTO NAO DEMORAR
 let preWarmedPos = null;
 let watchId = null;
 
@@ -178,7 +174,7 @@ let watchId = null;
       if (!preWarmedPos || pos.coords.accuracy < preWarmedPos.coords.accuracy)
         preWarmedPos = pos;
     },
-    () => {}, // falha silenciosa — é só aquecimento
+    () => {}, 
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 })();
@@ -218,7 +214,7 @@ function obterMelhorPosicao() {
             return;
           }
 
-          setTimeout(capturar, 200); // era 400ms
+          setTimeout(capturar, 200); 
         },
         err => { clearTimeout(globalTimeout); reject(err); },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 3000 }
@@ -242,10 +238,8 @@ function baterPonto() {
   if (!nome) return alert("⚠️ Selecione seu nome.");
   if (!tipo) return alert("⚠️ Selecione o tipo de ponto.");
 
-  // 🔑 Token = nome + timestamp (últimos 6 dígitos) + segundos arredondados
-  // Ex: PAULO_1712345678_45 → só válido por ~30s
-  const now = Math.floor(Date.now() / 1000); // segundos
-  const slot = Math.floor(now / 30); // bloco de 30s
+  const now = Math.floor(Date.now() / 1000); 
+  const slot = Math.floor(now / 30);
   const token = `${nome}_${now % 1000000}_${slot}`;
 
   atualizarMsg("📍 Localizando…");
